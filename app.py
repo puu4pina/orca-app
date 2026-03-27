@@ -40,7 +40,7 @@ def update_squat_state():
 
 
 # --- UI ---
-st.title("🏋️‍♂️ KyykkySähkäri – Laske kyykyt!")
+st.title("Mitä tapahtuu jos kyykkää 10 kertaa?")
 
 # Show counter
 st.markdown(f"## Kyykkyjä yhteensä: **{st.session_state.squats}**")
