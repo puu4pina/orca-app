@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-st.set_page_config(page_title="KyykkySähkäri", layout="wide")
+st.set_page_config(page_title="Mitä tapahtuu jos kyykkää 10 kertaa?", layout="wide")
 
 # --- SESSION STATE INITIALISATION ---
 if "state" not in st.session_state:
