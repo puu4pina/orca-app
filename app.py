@@ -13,7 +13,7 @@ orca_b64 = img_to_base64("orca.png")
 win_b64 = img_to_base64("xyz.jpg")
 
 st.title("🐋 Orca Labyrinth")
-st.write("Drag the orca through the maze. Touch the walls and you restart.")
+st.write("Raahaa miekkavalas, merten suurin kiusankappale maaliin koskematta seiniin.")
 
 components.html(
 f"""
