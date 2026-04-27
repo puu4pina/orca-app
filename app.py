@@ -1,76 +1,146 @@
 import streamlit as st
-import time
+import streamlit.components.v1 as components
+import base64
+from pathlib import Path
 
-st.set_page_config(page_title="Mitä tapahtuu jos kyykkää 10 kertaa?", layout="wide")
+st.set_page_config(page_title="Orca Labyrinth", layout="centered")
 
-# --- SESSION STATE INITIALISATION ---
-if "state" not in st.session_state:
-    st.session_state.state = "seiso"  # seiso / kyykkaa
-if "last_squat_time" not in st.session_state:
-    st.session_state.last_squat_time = 0
-if "squats" not in st.session_state:
-    st.session_state.squats = 0
-if "fact_index" not in st.session_state:
-    st.session_state.fact_index = -1  # first fact appears after 10 squats
+def img_to_base64(path):
+    data = Path(path).read_bytes()
+    return base64.b64encode(data).decode()
 
-# --- ASSETS ---
-standing_img = "standing.png"
-squatting_img = "squatting.png"
+orca_b64 = img_to_base64("orca.png")
+win_b64 = img_to_base64("xyz.jpg")
 
-# --- ORCA FACTS (FINNISH) ---
-facts = [
-    "Orkat ovat maailman suurimpia kiusaajia.",
-    "Orkat ovat huippupetoja, joilla ei ole luonnollisia vihollisia.",
-    "Orkat voivat elää yli 80‑vuotiaiksi. Kammottavaa!",
-    "Orkat mukauttavat ja opettavat metsästystekniikoita jälkeläisilleen.",
-    "Orkat voivat uida jopa 55 km/h. Itse uisin nopeammin.",
-    "Orkat tunnistavat oman heimonsa äänistä. Yeah right...",
-    "Orkat ovat yksi maailman älykkäimmistä eläinlajeista. Doubt it."
-]
+st.title("🐋 Orca Labyrinth")
+st.write("Drag the orca through the maze. Touch the walls and you restart.")
 
+components.html(
+f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {{
+    margin: 0;
+    text-align: center;
+    font-family: sans-serif;
+  }}
+  canvas {{
+    background: #eef3f7;
+    touch-action: none;
+    border-radius: 12px;
+  }}
+  #win {{
+    display: none;
+  }}
+  img {{
+    max-width: 80%;
+    border-radius: 12px;
+  }}
+</style>
+</head>
+<body>
 
-# --- MAIN UPDATE LOGIC ---
-def update_squat_state():
-    now = time.time()
+<canvas id="game" width="360" height="480"></canvas>
 
-    # Auto-stand up after 1 sec
-    if st.session_state.state == "kyykkaa":
-        if now - st.session_state.last_squat_time > 1:
-            st.session_state.state = "seiso"
+<div id="win">
+  <h2>🎉 Onnittelut!</h2>
+  <img src="data:image/png;base64,{win_b64}">
+  <br><br>
+  <button onclick="restart()" style="font-size:18px;padding:10px 20px;">
+    Uudestaan!
+  </button>
+</div>
 
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-# --- UI ---
-st.title("Mitä tapahtuu jos kyykkää 10 kertaa?")
+const orcaImg = new Image();
+orcaImg.src = "data:image/png;base64,{orca_b64}";
 
-# Show counter
-st.markdown(f"## Kyykkyjä yhteensä: **{st.session_state.squats}**")
+let orca = {{ x: 30, y: 30, r: 18 }};
+let dragging = false;
 
-# Electrician image
-if st.session_state.state == "seiso":
-    st.image(standing_img, width=180)
-else:
-    st.image(squatting_img, width=180)
+const walls = [
+ 
+  {{x: 140, y: 120, w: 20, h: 360}},
+  {{x: 210, y: 0,   w: 20, h: 300}},
+  {{x: 0,   y: 220, w: 160, h: 20}},
+  {{x: 120, y: 400, w: 200, h: 20}},
+];
 
-# Squat button
-if st.button("KYYKKÄÄ"):
-    st.session_state.state = "kyykkaa"
-    st.session_state.last_squat_time = time.time()
-    st.session_state.squats += 1
+const goal = {{ x: 320, y: 450, r: 20 }};
 
-    # Every 10 squats → new orca fact
-    if st.session_state.squats % 10 == 0:
-        st.session_state.fact_index += 1
-        if st.session_state.fact_index >= len(facts):
-            st.session_state.fact_index = 0  # loop facts endlessly
+function reset() {{
+  orca.x = 30;
+  orca.y = 30;
+}}
 
-# Show orca fact if any reached
-if st.session_state.fact_index >= 0:
-    st.markdown("### 🐳 Orkafakta:")
-    st.markdown(f"**{facts[st.session_state.fact_index]}**")
+function collisionRect(w) {{
+  return (
+    orca.x + orca.r > w.x &&
+    orca.x - orca.r < w.x + w.w &&
+    orca.y + orca.r > w.y &&
+    orca.y - orca.r < w.y + w.h
+  );
+}}
 
-# Update character pose
-update_squat_state()
+function winCheck() {{
+  const d = Math.hypot(orca.x - goal.x, orca.y - goal.y);
+  if (d < orca.r + goal.r) {{
+    canvas.style.display = "none";
+    document.getElementById("win").style.display = "block";
+  }}
+}}
 
-# Smooth small loop effect
-time.sleep(0.05)
-st.rerun()
+function draw() {{
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle = "#2c3e50";
+  walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
+
+  ctx.beginPath();
+  ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI * 2);
+  ctx.fillStyle = "#27ae60";
+  ctx.fill();
+
+  ctx.drawImage(orcaImg, orca.x-orca.r, orca.y-orca.r, orca.r*2, orca.r*2);
+}}
+
+canvas.addEventListener("pointerdown", e => dragging = true);
+canvas.addEventListener("pointerup", e => dragging = false);
+canvas.addEventListener("pointermove", e => {{
+  if (!dragging) return;
+  const r = canvas.getBoundingClientRect();
+  orca.x = e.clientX - r.left;
+  orca.y = e.clientY - r.top;
+
+  for (const w of walls) {{
+    if (collisionRect(w)) {{
+      reset();
+      return;
+    }}
+  }}
+  winCheck();
+}});
+
+function restart() {{
+  document.getElementById("win").style.display = "none";
+  canvas.style.display = "block";
+  reset();
+}}
+
+orcaImg.onload = () => {{
+  setInterval(draw, 16);
+}};
+</script>
+
+</body>
+</html>
+""",
+height=650,
+)
+
