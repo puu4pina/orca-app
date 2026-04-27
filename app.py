@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import base64
 from pathlib import Path
 
-st.set_page_config(page_title="Orca Labyrinth", layout="centered")
+st.set_page_config(page_title="Miekkavalaan labyrintti", layout="centered")
 
 def img_to_base64(path):
     data = Path(path).read_bytes()
