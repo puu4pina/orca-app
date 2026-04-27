@@ -12,7 +12,7 @@ def img_to_base64(path):
 orca_b64 = img_to_base64("orca.png")
 win_b64 = img_to_base64("xyz.jpg")
 
-st.title("🐋 Orca Labyrinth")
+st.title("🐋 Miekkavalaan labyrintti")
 st.write("Raahaa miekkavalas, merten suurin kiusankappale maaliin koskematta seiniin.")
 
 components.html(
