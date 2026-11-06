@@ -1,94 +1,29 @@
 import streamlit as st
-
-st.set_page_config(page_title="Miekkavalas-peli")
-
-if "stage" not in st.session_state:
-    st.session_state.stage = 0
-
-st.title("🐋 Miekkavalas-peli")
-
-# First question
-if st.session_state.stage == 0:
-
-    st.header("Tykkäätkö miekkavalaista")
-
-    col1, col2 = st.columns(2)
-
-    if col1.button("✅ Joo"):
-        st.session_state.stage = 999
-        st.rerun()
-
-    if col2.button("❌ En"):
-        st.session_state.stage = 1
-        st.rerun()
-
-# Game over
-elif st.session_state.stage == 999:
-
-    st.error("GAME OVER")
-    st.write(".....")
-
-    if st.button("Yritä uudelleen"):
-        st.session_state.stage = 0
-        st.rerun()
-
-# Other questions
-elif st.session_state.stage == 1:
-
-    st.header("Pitäisikö miekkavalaiden maksaa veroja?")
-
-    col1, col2 = st.columns(2)
-
-    if col1.button("✅ Joo"):
-        st.session_state.stage = 2
-        st.rerun()
-
-    if col2.button("❌ Ei"):
-        st.session_state.stage = 2
-        st.rerun()
-
-elif st.session_state.stage == 2:
-
-    st.header("Ajaako miekkavalaat trukkia?")
-
-    col1, col2 = st.columns(2)
-
-    if col1.button("✅ Joo"):
-        st.session_state.stage = 3
-        st.rerun()
-
-    if col2.button("❌ Ei"):
-        st.session_state.stage = 3
-        st.rerun()
-
-# Final question
-elif st.session_state.stage == 3:
-
-    st.header("Viimenen kyssäri")
-    st.subheader("Onko miekkavalaat hauskoja?")
-
-    col1, col2 = st.columns(2)
-
-    if col1.button("✅ Joo"):
-        st.session_state.stage = 4
-        st.rerun()
-
-    if col2.button("❌ Ei"):
-        st.success("🏆 Voitit!")
-        st.balloons()
-
-# Punishment for saying yes
-elif st.session_state.stage == 4:
-
-    st.header("Väärin.")
-    st.write("Yritä uudelleen.")
-
-    col1, col2 = st.columns(2)
-
-    if col1.button("❌ Ei", key="n1"):
-        st.success("🏆 Voitit!")
-        st.balloons()
-
-    if col2.button("❌ Ei", key="n2"):
-        st.success("🏆 Voitit!")
-        st.balloons()
+import streamlit.components.v1 as components
+st.set_page_config(page_title='ORCA RUN', page_icon='🚤', layout='centered', initial_sidebar_state='collapsed')
+st.markdown("<style>header,footer,#MainMenu{display:none}.block-container{padding:0!important;max-width:100%!important}iframe{display:block;border:0}[data-testid=stAppViewContainer]{background:#020b18}</style>",unsafe_allow_html=True)
+GAME=r'''
+<div id="og"><canvas id="c"></canvas>
+<section id="start" class="card show"><div class="hero">🚤</div><h1>ORCA RUN</h1><p>Sail as far as you can.<br>Dodge the orcas.</p><button id="go">START</button><small>Tap anywhere to jump the boat</small></section>
+<div id="hud" class="hide"><b id="meters">0 m</b><span>BEST SAIL DISTANCE</span></div>
+<section id="end" class="card"><div class="hero">💥</div><h2>ORCA COLLISION</h2><div id="score">0 m</div><p id="quip">The ocean wins this one.</p><button id="again">REPLAY</button></section>
+</div>
+<style>
+*{box-sizing:border-box}#og{position:relative;width:100%;height:min(100svh,850px);min-height:620px;overflow:hidden;background:#031426;color:#fff;font-family:system-ui,sans-serif;touch-action:none;user-select:none}canvas{position:absolute;width:100%;height:100%}.hide{display:none!important}.card{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);width:min(86%,350px);padding:26px 22px;text-align:center;border:1px solid #ffffff2b;border-radius:28px;background:#020e1ee8;box-shadow:0 25px 80px #0008;backdrop-filter:blur(15px);opacity:0;pointer-events:none;transition:.2s}.card.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}.hero{font-size:65px;filter:drop-shadow(0 8px 18px #00b7ff)}h1{font-size:40px;line-height:.9;margin:8px 0 14px;letter-spacing:-2px}.card p{color:#b8d4e7;line-height:1.45}.card button{width:100%;padding:16px;margin-top:13px;border:0;border-radius:14px;background:linear-gradient(135deg,#66efff,#00a8ff);color:#001521;font-size:18px;font-weight:900}.card small{display:block;margin-top:13px;color:#7696aa}#score{font-size:52px;font-weight:950;color:#62ebff}#hud{position:absolute;z-index:3;top:15px;left:50%;transform:translateX(-50%);text-align:center;background:#001426aa;border:1px solid #ffffff22;border-radius:15px;padding:9px 22px;backdrop-filter:blur(7px);pointer-events:none}#hud b{display:block;font-size:22px}#hud span{font-size:8px;letter-spacing:1.5px;color:#89dbf6}
+</style>
+<script>
+(()=>{const root=document.querySelector('#og'),c=root.querySelector('#c'),x=c.getContext('2d'),q=s=>root.querySelector(s);let W,H,DPR,run=0,last=0,dist=0,speed=6.2,spawn=0,boat,orcas=[],foam=[],clouds=[],shake=0;const rnd=(a,b)=>a+Math.random()*(b-a);
+function size(){let r=root.getBoundingClientRect();W=r.width;H=r.height;DPR=Math.min(devicePixelRatio||1,2);c.width=W*DPR;c.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',size);size();
+function waterY(){return H*.69}function reset(){dist=0;speed=6.2;spawn=0;orcas=[];foam=[];shake=0;boat={x:W*.23,y:waterY()-31,vy:0,onWater:1};clouds=Array.from({length:5},()=>({x:rnd(0,W),y:rnd(70,H*.34),s:rnd(.6,1.25)}));q('#meters').textContent='0 m'}
+function start(){reset();run=1;last=performance.now();q('#start').classList.remove('show');q('#end').classList.remove('show');q('#hud').classList.remove('hide');requestAnimationFrame(loop)}
+function jump(){if(!run)return;if(boat.onWater){boat.vy=-12.7;boat.onWater=0;for(let i=0;i<10;i++)foam.push({x:boat.x-20,y:waterY()-4,vx:rnd(-3,0),vy:rnd(-3,-.5),life:1})}}
+function spawnOrca(){let kind=Math.random()<.22?'jump':'sea';orcas.push({x:W+65,y:kind==='jump'?waterY()-86:waterY()-30,r:kind==='jump'?34:30,kind,bob:rnd(0,6.2)})}
+function end(){run=0;shake=16;q('#hud').classList.add('hide');q('#score').textContent=Math.floor(dist)+' m';q('#quip').textContent=dist<250?'That orca was waiting for you.':dist<600?'Respectable seamanship. Brutal orca.':dist<1000?'You nearly owned the ocean.':'This is getting suspiciously professional.';q('#end').classList.add('show');draw()}
+function hit(o){let bx=boat.x,by=boat.y+6,dx=bx-o.x,dy=by-o.y;return dx*dx+dy*dy<(o.r+22)*(o.r+22)}
+function update(dt){let f=dt/16.67;dist+=speed*.055*f;speed=Math.min(12.5,6.2+dist/240);boat.vy+=.72*f;boat.y+=boat.vy*f;let floor=waterY()-31;if(boat.y>=floor){boat.y=floor;boat.vy=0;boat.onWater=1}spawn+=dt;if(spawn>Math.max(780,1700-dist*.22)){spawn=0;spawnOrca()}orcas.forEach(o=>{o.x-=speed*f;o.bob+=.06*f;if(o.kind==='sea')o.y=waterY()-30+Math.sin(o.bob)*7;if(hit(o))end()});orcas=orcas.filter(o=>o.x>-80);foam.forEach(p=>{p.x+=p.vx*f;p.y+=p.vy*f;p.vy+=.11*f;p.life-=.03*f});foam=foam.filter(p=>p.life>0);clouds.forEach(a=>{a.x-=speed*.055*f;if(a.x<-100)a.x=W+100});q('#meters').textContent=Math.floor(dist)+' m'}
+function boatDraw(){x.save();x.translate(boat.x,boat.y);let tilt=Math.max(-.23,Math.min(.16,boat.vy*.018));x.rotate(tilt);x.fillStyle='#f5fbff';x.beginPath();x.moveTo(-31,7);x.lineTo(34,7);x.lineTo(22,23);x.lineTo(-20,23);x.closePath();x.fill();x.fillStyle='#00b4e7';x.fillRect(-12,-7,28,15);x.fillStyle='#06223a';x.fillRect(-3,-31,3,25);x.fillStyle='#64e9ff';x.beginPath();x.moveTo(0,-30);x.lineTo(22,-9);x.lineTo(0,-9);x.closePath();x.fill();x.fillStyle='#ffce46';x.beginPath();x.arc(-2,-5,5,0,7);x.fill();x.restore()}
+function orcaDraw(o){x.save();x.translate(o.x,o.y);x.fillStyle='#fff';x.beginPath();x.ellipse(0,8,25,16,0,0,7);x.fill();x.fillStyle='#07131e';x.beginPath();x.ellipse(0,0,34,20,-.1,0,7);x.fill();x.beginPath();x.moveTo(25,2);x.lineTo(48,-15);x.lineTo(42,9);x.fill();x.beginPath();x.moveTo(-2,-17);x.lineTo(-12,-37);x.lineTo(13,-17);x.fill();x.fillStyle='#fff';x.beginPath();x.ellipse(-16,-4,8,5,.2,0,7);x.fill();x.fillStyle='#7deaff';x.beginPath();x.arc(-22,-5,2,0,7);x.fill();x.restore()}
+function draw(){let sky=x.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#031225');sky.addColorStop(.55,'#075c7c');sky.addColorStop(1,'#0cc3d6');x.fillStyle=sky;x.fillRect(0,0,W,H);x.save();if(shake){x.translate(rnd(-shake,shake),rnd(-shake,shake));shake*=.75}clouds.forEach(a=>{x.globalAlpha=.12;x.fillStyle='#d9f7ff';x.beginPath();x.ellipse(a.x,a.y,55*a.s,14*a.s,0,0,7);x.fill()});x.globalAlpha=1;let wy=waterY();x.fillStyle='#007ba3';x.fillRect(0,wy,W,H-wy);x.strokeStyle='#6befff';x.lineWidth=3;x.beginPath();for(let px=0;px<=W;px+=12)x.lineTo(px,wy+Math.sin(px*.045+dist*.2)*4);x.stroke();x.fillStyle='#04334f';x.fillRect(0,H-42,W,42);foam.forEach(p=>{x.globalAlpha=p.life;x.fillStyle='#a9f6ff';x.beginPath();x.arc(p.x,p.y,3,0,7);x.fill()});x.globalAlpha=1;orcas.forEach(orcaDraw);boatDraw();x.restore()}
+function loop(t){if(!run)return;let dt=Math.min(34,t-last);last=t;update(dt);draw();if(run)requestAnimationFrame(loop)}q('#go').onclick=start;q('#again').onclick=start;root.addEventListener('pointerdown',e=>{if(e.target.tagName!=='BUTTON')jump()});addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='ArrowUp')&&run){e.preventDefault();jump()}});reset();draw()})();
+</script>'''
+components.html(GAME,height=850,scrolling=False)
